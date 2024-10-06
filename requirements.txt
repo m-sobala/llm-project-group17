@@ -1,2 +1,7 @@
+ipykernel
 torch
 torchtune
+transformers
+datasets
+sacremoses
+peft
