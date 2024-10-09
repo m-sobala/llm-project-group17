@@ -5,3 +5,5 @@ transformers
 datasets
 sacremoses
 peft
+sacrebleu
+evaluate
