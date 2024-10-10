@@ -22,7 +22,7 @@ def main():
     )
 
     fine_tune_model_lora(
-        translation_model_name="Helsinki-NLP/opus-mt-en-es",
+        translation_model_name="t5-small",
         dataset_name="Iker/Document-Translation-en-es",
         lora_config=lora_config,
         training_arguments=training_args

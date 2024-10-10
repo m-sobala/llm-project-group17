@@ -3,7 +3,9 @@ torch
 torchtune
 transformers
 datasets
+evaluate
 sacremoses
+protobuf
 peft
 sacrebleu
 evaluate
