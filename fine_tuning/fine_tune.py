@@ -22,7 +22,7 @@ def main():
     )
 
     fine_tune_model_lora(
-        translation_model_name="t5-small",
+        translation_model_name="SEBIS/legal_t5_small_trans_en_es_small_finetuned",
         dataset_name="Iker/Document-Translation-en-es",
         lora_config=lora_config,
         training_arguments=training_args

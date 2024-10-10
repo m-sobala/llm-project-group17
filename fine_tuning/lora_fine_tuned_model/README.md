@@ -1,5 +1,5 @@
 ---
-base_model: Helsinki-NLP/opus-mt-en-es
+base_model: SEBIS/legal_t5_small_trans_en_es_small_finetuned
 library_name: peft
 ---
 
