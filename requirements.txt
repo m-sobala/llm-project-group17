@@ -9,3 +9,5 @@ protobuf
 peft
 sacrebleu
 evaluate
+sys
+os
