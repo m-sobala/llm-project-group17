@@ -4,6 +4,7 @@ from datasets import Dataset, load_dataset
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, Trainer, TrainingArguments, EvalPrediction
 from peft import LoraConfig, get_peft_model
 from typing import Tuple, Callable, Dict, Any, List
+from evaluation_utils import compute_bleu_score
 
 def load_model_and_tokenizer(model_name: str) -> Tuple[AutoTokenizer, AutoModelForSeq2SeqLM]:
     """
@@ -140,21 +141,10 @@ def compute_metrics(eval_preds: EvalPrediction, tokenizer: AutoTokenizer):
     Returns:
         dict: A dictionary containing the BLEU score.
     """
-    bleu = evaluate.load("sacrebleu")
+    
     preds, labels = eval_preds.predictions, eval_preds.label_ids
 
-    logits = preds[0]
-    predictions = np.argmax(logits, axis=-1)
-
-    decoded_predictions = tokenizer.batch_decode(predictions, skip_special_tokens=True)
-    decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
-
-    decoded_predictions = postprocess_texts_for_bleu(decoded_predictions)
-    decoded_labels = postprocess_texts_for_bleu(decoded_labels)
-
-    decoded_labels = [[label] for label in decoded_labels]
-
-    return bleu.compute(predictions=decoded_predictions, references=decoded_labels)
+    return compute_bleu_score(preds, labels, tokenizer)
 
 def fine_tune_model_lora(
     model_name: str, dataset_name: str, lora_config: LoraConfig, training_arguments: TrainingArguments
