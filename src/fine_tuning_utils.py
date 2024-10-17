@@ -147,7 +147,7 @@ def compute_metrics(eval_preds: EvalPrediction, tokenizer: AutoTokenizer) -> Dic
     """
     preds, labels = eval_preds.predictions, eval_preds.label_ids
 
-    return compute_bleu_score(preds, labels, tokenizer, "sacrebleu")
+    return compute_bleu_score(preds, labels, tokenizer)
 
 def fine_tune_model_lora(
     model_name: str, dataset_name: str, lora_config: LoraConfig, training_arguments: TrainingArguments

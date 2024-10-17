@@ -19,11 +19,11 @@ def postprocess_texts_for_bleu(texts: List[str]) -> List[str]:
     ]
     return texts
 
-def compute_bleu_score(
-    preds: np.ndarray, labels: np.ndarray, tokenizer: AutoTokenizer, metric: str = "sacrebleu"
+def compute_sacrebleu_score(
+    preds: np.ndarray, labels: np.ndarray, tokenizer: AutoTokenizer
 ) -> Dict[str, Any]:
     """
-    Computes the metric score for a list of predicted translations and reference translations.
+    Computes the SacreBleu score for a list of predicted translations and reference translations.
     
     Args:
         preds (np.ndarray): A list containing the tokenized model output
@@ -35,10 +35,8 @@ def compute_bleu_score(
 
         tokenizer (AutoTokenizer): The tokenizer used to decode token ids to text.
 
-        metric (str, default="sacrebleu"): Metric to compute.
-
     Returns:
-        (Dict[str, Any]): A dictionary containing the computed metrics.
+        (Dict[str, Any]): A dictionary containing the SacreBLEU metrics.
     """
     bleu = evaluate.load("sacrebleu")
     
