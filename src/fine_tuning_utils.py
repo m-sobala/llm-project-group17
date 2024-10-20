@@ -2,7 +2,7 @@ from datasets import Dataset
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, Trainer, TrainingArguments, EvalPrediction
 from peft import LoraConfig, get_peft_model
 from typing import Dict, Any
-from evaluation_utils import compute_bleu_score
+from evaluation_utils import compute_sacrebleu_score
 
 def compute_metrics(eval_preds: EvalPrediction, tokenizer: AutoTokenizer) -> Dict[str, Any]:
     """
@@ -18,7 +18,7 @@ def compute_metrics(eval_preds: EvalPrediction, tokenizer: AutoTokenizer) -> Dic
     """
     preds, labels = eval_preds.predictions, eval_preds.label_ids
 
-    return compute_bleu_score(preds, labels, tokenizer)
+    return compute_sacrebleu_score(preds, labels, tokenizer)
 
 def fine_tune_model_lora(
     model: AutoModelForSeq2SeqLM,

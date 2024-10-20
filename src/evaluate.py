@@ -1,11 +1,11 @@
 from transformers import TrainingArguments
 from peft import LoraConfig, TaskType
 
-from src.utils import (
+from utils import (
     load_model_and_tokenizer, load_and_train_test_split_dataset,
     tokenize_dataset, translation_tokenize_function
 )
-from src.fine_tuning_utils import fine_tune_model_lora
+from fine_tuning_utils import fine_tune_model_lora
 
 def main():
     model, tokenizer = load_model_and_tokenizer(
