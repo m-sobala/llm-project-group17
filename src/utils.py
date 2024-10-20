@@ -1,8 +1,6 @@
 from datasets import Dataset, load_dataset
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, Trainer, TrainingArguments, EvalPrediction
-from peft import LoraConfig, get_peft_model
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 from typing import Tuple, Callable, Dict, Any
-from evaluation_utils import compute_sacrebleu_score
 
 def load_model_and_tokenizer(model_name: str) -> Tuple[AutoTokenizer, AutoModelForSeq2SeqLM]:
     """
@@ -20,7 +18,7 @@ def load_model_and_tokenizer(model_name: str) -> Tuple[AutoTokenizer, AutoModelF
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 
-    return tokenizer, model
+    return model, tokenizer
 
 def add_task_prefix(
     example: Dict[str, Any],
