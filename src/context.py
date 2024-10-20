@@ -1,22 +1,4 @@
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-
-# NEED TO FIX DOCUMENTATION
-
-def load_summarizing_model_and_tokenizer(model_name: str):
-    """
-    Loads a pre-trained model and tokenizer for summarizing.
-
-    Args:
-        model_name (str): The name of the pre-trained sequence-to-sequence model.
-
-    Returns:
-        tuple: 
-            - tokenizer: The tokenizer for the summarization model.
-            - model: The sequence-to-sequence model.
-    """
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-    return tokenizer, model
+from utils import load_model_and_tokenizer
 
 
 def summarize_text(model, text_file: str, max_length=150, min_length=40) -> str:
@@ -35,7 +17,7 @@ def summarize_text(model, text_file: str, max_length=150, min_length=40) -> str:
         text = file.read()
 
     # Load the summarization model
-    tokenizer, model = load_summarizing_model_and_tokenizer(model)
+    tokenizer, model = load_model_and_tokenizer(model)
 
     inputs = tokenizer.encode("summarize: " + text, return_tensors="pt", max_length=1024, truncation=True)
     summary_ids = model.generate(inputs, max_length=max_length, min_length=min_length, length_penalty=2.0, num_beams=4, early_stopping=True)
