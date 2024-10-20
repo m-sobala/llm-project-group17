@@ -2,7 +2,7 @@ from datasets import Dataset, load_dataset
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, Trainer, TrainingArguments, EvalPrediction
 from peft import LoraConfig, get_peft_model
 from typing import Tuple, Callable, Dict, Any
-from evaluation_utils import compute_bleu_score
+from evaluation_utils import compute_sacrebleu_score
 
 def load_model_and_tokenizer(model_name: str) -> Tuple[AutoTokenizer, AutoModelForSeq2SeqLM]:
     """
