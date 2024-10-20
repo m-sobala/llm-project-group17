@@ -22,7 +22,7 @@ def summarize_text(
     #     text = file.read()
 
     # Load the summarization model
-    tokenizer, model = load_model_and_tokenizer(model)
+    model, tokenizer = load_model_and_tokenizer(model)
 
     inputs = tokenizer.encode("summarize: " + text, return_tensors="pt", max_length=1024, truncation=True)
     summary_ids = model.generate(inputs, max_length=max_length, min_length=min_length, length_penalty=2.0, num_beams=4, early_stopping=True)

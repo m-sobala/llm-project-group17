@@ -1,6 +1,7 @@
 from transformers import TrainingArguments, AutoConfig, AutoModelForSeq2SeqLM, AutoTokenizer
 from peft import LoraConfig, TaskType
 from datasets import Dataset
+import numpy as np
 
 from utils import (
     load_model_and_tokenizer, load_and_train_test_split_dataset,
@@ -47,20 +48,35 @@ def save_blue_score(
         tokenized_test: Dataset, 
         performance: dict, 
         model_name: str) -> dict:
-    tokenized_preds = model.generate(tokenized_test['en'])
+    
+    #Convert to model takable input
+    tokenized_inputs = tokenizer(
+        tokenized_test['en'],
+        return_tensors="pt",
+        padding=True,
+        truncation=True
+    )
 
-    score = compute_sacrebleu_score(tokenized_preds, tokenized_test['es'], tokenizer=tokenizer)
+    tokenized_preds = model.generate(
+            input_ids=tokenized_inputs['input_ids'],
+            attention_mask=tokenized_inputs['attention_mask']
+    )
+    
+    preds_np = tokenized_preds.numpy()
+
+    labels_np = np.array(tokenized_test['es'])
+
+    score = compute_sacrebleu_score(preds_np, labels_np, tokenizer=tokenizer)
     performance[f'{model_name}'] = score
+
     return performance
 
-def add_context(tokenizer: AutoTokenizer, tokenized_X: Dataset) -> Dataset:
-    new_x = []
-    articles = tokenizer.decode(tokenized_X, skip_special_tokens=True)
-    for article in articles:
+def add_context(tokenizer: AutoTokenizer, test_X: Dataset) -> Dataset:
+    for i, article in enumerate(test_X):
         context = summarize_text(article)
-        x = add_task_prefix(article, task_prefix=f"With the context: {context}, Translate the following text from English to Spanish: ")
-        new_x.append(x)
-    return tokenize_dataset(new_x, tokenizer, translation_tokenize_function)
+        pref_x = add_task_prefix(article, task_prefix=f"With the context: {context}, Translate the following text from English to Spanish: ")
+        test_X[i] = pref_x
+    return tokenize_dataset(test_X, tokenizer, translation_tokenize_function)
 
 
 def main():
@@ -71,10 +87,11 @@ def main():
     train_dataset, test_dataset = load_and_train_test_split_dataset(
         dataset_name="Iker/Document-Translation-en-es"
     )
-
+    
     tokenized_train = tokenize_dataset(train_dataset, tokenizer, translation_tokenize_function)
     tokenized_test = tokenize_dataset(test_dataset, tokenizer, translation_tokenize_function)
-    tokenized_test_context = add_context(tokenizer, tokenized_test)
+    test_dataset['en'] = add_context(tokenizer, test_dataset['en'])
+    tokenized_test_context = tokenize_dataset(test_dataset, tokenizer, translation_tokenize_function)
 
     performance = {}  # A dict keeping track of the blue scores for each model
     performance = save_blue_score(model, tokenizer, tokenized_test, performance, 'Baseline')
@@ -87,6 +104,7 @@ def main():
     performance = save_blue_score(fine_tuned_model, tokenizer, tokenized_test, performance, 'FineTuning')
     performance = save_blue_score(fine_tuned_model, tokenizer, tokenized_test_context, performance, 'Context_FineTuning')
 
+    print(performance)
 
 if __name__ == "__main__":
     main()
