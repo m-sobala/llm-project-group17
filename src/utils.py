@@ -61,8 +61,8 @@ def load_and_train_test_split_dataset(dataset_name: str, test_size: float = .2) 
     dataset = load_dataset(dataset_name)["train"]
 
     train_test_split = dataset.train_test_split(test_size=test_size, seed=42)
-    train_dataset = train_test_split["train"].select(range(5)).map(add_task_prefix)
-    test_dataset = train_test_split["test"].select(range(5)).map(add_task_prefix)
+    train_dataset = train_test_split["train"].select(range(5))
+    test_dataset = train_test_split["test"].select(range(5))
 
     return train_dataset, test_dataset
 

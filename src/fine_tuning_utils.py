@@ -24,6 +24,7 @@ def fine_tune_model_lora(
     model: AutoModelForSeq2SeqLM,
     tokenizer: AutoTokenizer,
     dataset: Dataset,
+    eval_dataset: Dataset,
     lora_config: LoraConfig,
     training_arguments: TrainingArguments
 ) -> None:
@@ -47,6 +48,7 @@ def fine_tune_model_lora(
         model=model,
         args=training_arguments,
         train_dataset=dataset,
+        eval_dataset=eval_dataset,
         compute_metrics=lambda p: compute_metrics(p, tokenizer)
     )
 
