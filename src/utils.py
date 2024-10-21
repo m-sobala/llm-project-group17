@@ -61,15 +61,15 @@ def load_and_train_test_split_dataset(dataset_name: str, test_size: float = .2) 
     dataset = load_dataset(dataset_name)["train"]
 
     train_test_split = dataset.train_test_split(test_size=test_size, seed=42)
-    train_dataset = train_test_split["train"].select(range(5))
-    test_dataset = train_test_split["test"].select(range(5))
+    train_dataset = train_test_split["train"]
+    test_dataset = train_test_split["test"]
 
     return train_dataset, test_dataset
 
 def translation_tokenize_function(
     tokenizer: AutoTokenizer,
     examples: Dict[str, Any],
-    max_length: int = 128,
+    max_length: int = 1024,
     source_language: str = "en",
     target_language: str = "es"
 ) -> Dict[str, Any]:
