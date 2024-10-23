@@ -1,21 +1,33 @@
 from transformers import TrainingArguments, AutoModelForSeq2SeqLM, AutoTokenizer
 from peft import LoraConfig, TaskType
 from datasets import Dataset
-import numpy as np
 
-from utils import (
+from src.config import MAX_LENGTH
+
+from src.utils import (
     load_model_and_tokenizer, load_and_train_test_split_dataset,
     tokenize_dataset, translation_tokenize_function,
     add_task_prefix
 )
-from fine_tuning_utils import fine_tune_model_lora
-from evaluation_utils import compute_sacrebleu_score
-from context import summarize_text
+from src.fine_tuning_utils import fine_tune_model_lora, fine_tune_model_full
+from src.evaluation_utils import compute_sacrebleu_score
+from src.context import summarize_text
 
-def fine_tune_model(model: AutoModelForSeq2SeqLM, 
-                    tokenizer: AutoTokenizer, 
-                    tokenized_train: Dataset,
-                    tokenized_test: Dataset):
+def fine_tune_model(
+    model: AutoModelForSeq2SeqLM, 
+    tokenizer: AutoTokenizer, 
+    tokenized_train: Dataset,
+    tokenized_test: Dataset,
+) -> None:
+    """
+    Fine tune model using both full and lora methods.
+
+    Args:
+        model (AutoModelForSeq2SeqLM): The pre-trained model to fine-tune.
+        tokenizer (AutoTokenizer): The tokenizer associated with the model.
+        tokenized_train (Dataset): The tokenized training dataset to use for fine-tuning.
+        tokenized_test (Dataset): The tokenized test dataset to use for fine-tuning.
+    """
     lora_config = LoraConfig(
         r=8,
         lora_alpha=32,
@@ -35,13 +47,21 @@ def fine_tune_model(model: AutoModelForSeq2SeqLM,
         save_total_limit=1
     )
 
+    fine_tune_model_full(
+        model=model,
+        tokenizer=tokenizer,
+        dataset=tokenized_train,
+        eval_dataset=tokenized_test,
+        training_arguments=training_args
+    )
+
     fine_tune_model_lora(
         model=model,
         tokenizer=tokenizer,
         dataset=tokenized_train,
         eval_dataset=tokenized_test,
-        lora_config=lora_config,
-        training_arguments=training_args
+        training_arguments=training_args,
+        lora_config=lora_config
     )
 
 def save_blue_score(
@@ -56,26 +76,27 @@ def save_blue_score(
         tokenized_test['en'],
         return_tensors="pt",
         padding=True,
-        truncation=True
+        truncation=True,
+        max_length=MAX_LENGTH
     )
 
     tokenized_preds = model.generate(
-            input_ids=tokenized_inputs['input_ids'],  # input_ids needed for generation
-            attention_mask=tokenized_inputs['attention_mask'],  # ensure attention mask is used
-            return_dict_in_generate=True,
-            output_scores=True
+        **tokenized_inputs,
+        return_dict_in_generate=True,
+        output_scores=True,
+        max_length=MAX_LENGTH
     )
-
-    logits = tokenized_preds.scores[-1].cpu().numpy()
+    predictions = tokenized_preds.sequences
 
     tokenized_labels = tokenizer(
         tokenized_test['es'],
         return_tensors="np",  # Use numpy format for compatibility with labels_np
         padding=True,
-        truncation=True
+        truncation=True,
+        max_length=MAX_LENGTH
     )['input_ids']
 
-    score = compute_sacrebleu_score([logits], tokenized_labels, tokenizer=tokenizer)
+    score = compute_sacrebleu_score(predictions, tokenized_labels, tokenizer=tokenizer)
     performance[f'{model_name}'] = score
 
     return performance
@@ -107,13 +128,16 @@ def main():
     performance = {}  # A dict keeping track of the blue scores for each model
     performance = save_blue_score(model, tokenizer, tokenized_test, performance, 'Baseline')
     performance = save_blue_score(model, tokenizer, tokenized_test_context, performance, 'Context')
-    
 
     fine_tune_model(model, tokenizer, tokenized_train, tokenized_test)
-    fine_tuned_model = AutoModelForSeq2SeqLM.from_pretrained("./lora_fine_tuned_model")
 
-    performance = save_blue_score(fine_tuned_model, tokenizer, tokenized_test, performance, 'FineTuning')
-    performance = save_blue_score(fine_tuned_model, tokenizer, tokenized_test_context, performance, 'Context_FineTuning')
+    fine_tuned_model_full = AutoModelForSeq2SeqLM.from_pretrained("./full_fine_tuned_model")
+    performance = save_blue_score(fine_tuned_model_full, tokenizer, tokenized_test, performance, 'FullFineTuning')
+    performance = save_blue_score(fine_tuned_model_full, tokenizer, tokenized_test_context, performance, 'Context_FullFineTuning')
+
+    fine_tuned_model_lora = AutoModelForSeq2SeqLM.from_pretrained("./lora_fine_tuned_model")
+    performance = save_blue_score(fine_tuned_model_lora, tokenizer, tokenized_test, performance, 'LoraFineTuning')
+    performance = save_blue_score(fine_tuned_model_lora, tokenizer, tokenized_test_context, performance, 'Context_LoraFineTuning')
 
     print(performance)
 

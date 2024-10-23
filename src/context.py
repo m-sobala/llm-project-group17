@@ -1,4 +1,5 @@
-from utils import load_model_and_tokenizer
+from src.utils import load_model_and_tokenizer
+from src.config import MAX_LENGTH
 
 def summarize_text(
         text: str,
@@ -24,10 +25,9 @@ def summarize_text(
     # Load the summarization model
     model, tokenizer = load_model_and_tokenizer(model)
 
-    inputs = tokenizer.encode("summarize: " + text, return_tensors="pt", max_length=1024, truncation=True)
+    inputs = tokenizer.encode("summarize: " + text, return_tensors="pt", max_length=MAX_LENGTH, truncation=True)
     summary_ids = model.generate(inputs, max_length=max_length, min_length=min_length, length_penalty=2.0, num_beams=4, early_stopping=True)
 
     summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
 
     return summary
-
