@@ -1,5 +1,5 @@
 ipykernel
-torch
+torch==2.3.0+cu121
 torchtune
 transformers
 datasets
@@ -9,3 +9,4 @@ protobuf
 peft
 sacrebleu
 evaluate
+-f https://download.pytorch.org/whl/torch_stable.html
