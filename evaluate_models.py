@@ -1,6 +1,7 @@
 from transformers import TrainingArguments, AutoModelForSeq2SeqLM, AutoTokenizer
 from peft import LoraConfig, TaskType
 from datasets import Dataset
+import numpy as np
 
 from src.config import MAX_LENGTH
 
@@ -12,6 +13,25 @@ from src.utils import (
 from src.fine_tuning_utils import fine_tune_model_lora, fine_tune_model_full
 from src.evaluation_utils import compute_sacrebleu_score
 from src.context import summarize_text
+
+def print_qualitative_analysis(predictions: np.ndarray, labels: np.ndarray, tokenizer: AutoTokenizer, model_name: str):
+    """
+    Enables qualitative analysis by decoding and printing model predictions alongside their true labels.
+
+    Args:
+        predictions (np.ndarray): The predicted token IDs from the model output.
+        labels (np.ndarray): The true token IDs (ground truth) for each example.
+        tokenizer (AutoTokenizer): The tokenizer used to decode token IDs into text.
+        model_name (str): The string name of the model
+
+    """
+    decoded_predictions = tokenizer.batch_decode(predictions, skip_special_tokens=True, max_length=MAX_LENGTH)
+    decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True, max_length=MAX_LENGTH)
+
+    for i in range(3):
+        print(f"{model_name} prediction {i}: {decoded_predictions[i]}")
+        print(f"{model_name} label {i}: {decoded_labels[i]}")
+
 
 def fine_tune_model(
     model: AutoModelForSeq2SeqLM, 
@@ -95,6 +115,8 @@ def save_blue_score(
         truncation=True,
         max_length=MAX_LENGTH
     )['input_ids']
+
+    print_qualitative_analysis(predictions,tokenized_labels, tokenizer, model_name)
 
     score = compute_sacrebleu_score(predictions, tokenized_labels, tokenizer=tokenizer)
     performance[f'{model_name}'] = score
