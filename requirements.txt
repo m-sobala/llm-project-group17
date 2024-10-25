@@ -9,4 +9,5 @@ protobuf
 peft
 sacrebleu
 evaluate
+matplotlib
 -f https://download.pytorch.org/whl/torch_stable.html

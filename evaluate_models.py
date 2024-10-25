@@ -40,13 +40,14 @@ def get_model_scores(performance: dict, ordered_scores: list=ORDERED_SCORES) -> 
         bleu_scores.append(performance[key]['score'])
     return (models, bleu_scores)
 
-def plot_performance_models(models: list, bleu_scores: list):
+def plot_performance_models(models: list, bleu_scores: list, save_path: str = 'visuals/bleu_scores_plot.png'):
     """
-    Plots the BLEU scores of different models in a bar chart.
+    Plots the BLEU scores of different models in a bar chart and saves the plot as a PNG file.
 
     Parameters:
     models (list): A list of model names (strings) to be plotted on the x-axis.
     bleu_scores (list): A list of BLEU scores (floats) corresponding to each model, to be plotted on the y-axis.
+    save_path (str): Path to save the plot image. Defaults to 'visuals/bleu_scores_plot.png'.
     """
     plt.figure(figsize=(10, 6))
     plt.bar(models, bleu_scores, color='#4169E1')
@@ -56,7 +57,8 @@ def plot_performance_models(models: list, bleu_scores: list):
     plt.xticks(rotation=45, color='black')
     plt.yticks(color='black')
     plt.tight_layout()
-    plt.show()
+    
+    plt.savefig(save_path)
 
 def print_qualitative_analysis(predictions: np.ndarray, labels: np.ndarray, tokenizer: AutoTokenizer, model_name: str):
     """
