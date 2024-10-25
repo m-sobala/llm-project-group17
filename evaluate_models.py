@@ -40,7 +40,7 @@ def get_model_scores(performance: dict, ordered_scores: list=ORDERED_SCORES) -> 
         bleu_scores.append(performance[key]['score'])
     return (models, bleu_scores)
 
-def plot_performance_models(models: list, bleu_scores: list, save_path: str = 'visuals/bleu_scores_plot.png'):
+def plot_performance_models(models: list, bleu_scores: list, save_path: str = 'bleu_scores_plot.png'):
     """
     Plots the BLEU scores of different models in a bar chart and saves the plot as a PNG file.
 
@@ -95,7 +95,7 @@ def fine_tune_model(
         tokenized_test (Dataset): The tokenized test dataset to use for fine-tuning.
     """
     lora_config = LoraConfig(
-        r=8,
+        r=16,
         lora_alpha=32,
         lora_dropout=0.4,
         task_type=TaskType.SEQ_2_SEQ_LM,
