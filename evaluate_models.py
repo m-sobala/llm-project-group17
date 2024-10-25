@@ -2,8 +2,9 @@ from transformers import TrainingArguments, AutoModelForSeq2SeqLM, AutoTokenizer
 from peft import LoraConfig, TaskType
 from datasets import Dataset
 import numpy as np
+import matplotlib.pyplot as plt
 
-from src.config import MAX_LENGTH
+from src.config import MAX_LENGTH, ORDERED_SCORES
 
 from src.utils import (
     load_model_and_tokenizer, load_and_train_test_split_dataset,
@@ -13,6 +14,49 @@ from src.utils import (
 from src.fine_tuning_utils import fine_tune_model_lora, fine_tune_model_full
 from src.evaluation_utils import compute_sacrebleu_score
 from src.context import summarize_text
+
+
+def get_model_scores(performance: dict, ordered_scores: list=ORDERED_SCORES) -> tuple:
+    """
+    Extract model names and their corresponding BLEU scores from the performance dictionary.
+
+    Args:
+        performance (dict): A dictionary containing performance data for different models. 
+                            The keys represent model names, and the values contain various 
+                            performance metrics, including the 'score' field (BLEU score).
+        
+        ordered_scores (list, optional): A list of model names specifying the order in which 
+                                         to retrieve the BLEU scores. Defaults to ORDERED_SCORES.
+
+    Returns:
+        (tuple): A tuple containing:
+            - models (List[str]): A list of model names in the order specified by ordered_scores.
+            - bleu_scores (List[float]): A list of corresponding BLEU scores for each model.
+    """
+    models = []
+    bleu_scores = []
+    for key in ordered_scores:
+        models.append(key)
+        bleu_scores.append(performance[key]['score'])
+    return (models, bleu_scores)
+
+def plot_performance_models(models: list, bleu_scores: list):
+    """
+    Plots the BLEU scores of different models in a bar chart.
+
+    Parameters:
+    models (list): A list of model names (strings) to be plotted on the x-axis.
+    bleu_scores (list): A list of BLEU scores (floats) corresponding to each model, to be plotted on the y-axis.
+    """
+    plt.figure(figsize=(10, 6))
+    plt.bar(models, bleu_scores, color='#4169E1')
+    plt.xlabel('Models', color='black')
+    plt.ylabel('BLEU Score', color='black')
+    plt.title('BLEU Scores for Different Models', color='black')
+    plt.xticks(rotation=45, color='black')
+    plt.yticks(color='black')
+    plt.tight_layout()
+    plt.show()
 
 def print_qualitative_analysis(predictions: np.ndarray, labels: np.ndarray, tokenizer: AutoTokenizer, model_name: str):
     """
@@ -162,6 +206,8 @@ def main():
     performance = save_blue_score(fine_tuned_model_lora, tokenizer, tokenized_test_context, performance, 'Context_LoraFineTuning')
 
     print(performance)
+    models, scores = get_model_scores(performance)
+    plot_performance_models(models, scores)
 
 if __name__ == "__main__":
     main()
