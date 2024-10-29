@@ -1,8 +1,10 @@
+from pathlib import Path
+import matplotlib.pyplot as plt
 from datasets import Dataset, load_dataset
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
-from typing import Tuple, Callable, Dict, Any
+from typing import List, Tuple, Dict, Callable, Optional, Any
 
-from src.config import MAX_LENGTH
+from src.config import MAX_LENGTH, ORDERED_SCORES
 
 def load_model_and_tokenizer(model_name: str) -> Tuple[AutoTokenizer, AutoModelForSeq2SeqLM]:
     """
@@ -131,3 +133,56 @@ def tokenize_dataset(
     tokenized_dataset = dataset.map(lambda x: tokenize_function(tokenizer, x), batched=True)
 
     return tokenized_dataset
+
+def get_model_scores(
+    performance: Dict[str, Any], ordered_scores: Optional[List[str]] = ORDERED_SCORES
+) -> Tuple[List[str], List[float]]:
+    """
+    Extract model names and their corresponding BLEU scores from the performance dictionary.
+
+    Args:
+        performance (Dict[str, Any]): A performance dictionary for different models. 
+        
+        ordered_scores (Optional[List[str]], default=ORDERED_SCORES): A list of model
+            names specifying the order in which to retrieve the BLEU scores.
+
+    Returns:
+        (Tuple[List[str], List[float]])
+            - A list of model names in the order specified by ordered_scores.
+            - A list of corresponding BLEU scores for each model.
+    """
+    models = []
+    bleu_scores = []
+
+    for key in ordered_scores:
+        models.append(key)
+        bleu_scores.append(performance[key]['score'])
+
+    return (models, bleu_scores)
+
+def plot_performance_models(
+    performance: Dict[str, Any], ordered_scores: Optional[List[str]] = ORDERED_SCORES, save_path: Path = "bleu_scores_plot.png"
+) -> None:
+    """
+    Plots the BLEU scores of different models in a bar chart and saves the plot as a PNG file.
+
+    Args:
+        performance (Dict[str, Any]): A performance dictionary for different models. 
+        
+        ordered_scores (Optional[List[str]], default=ORDERED_SCORES): A list of model
+            names specifying the order in which to retrieve the BLEU scores.
+    
+        save_path (Path, default="bleu_scores_plot.png"): Path to save the plot image.
+    """
+    model_names, bleu_scores = get_model_scores(performance, ordered_scores)
+
+    plt.figure(figsize=(10, 6))
+    plt.bar(model_names, bleu_scores, color="#4169E1")
+    plt.xlabel("Models", color="black")
+    plt.ylabel("BLEU Score", color="black")
+    plt.title("BLEU Scores for Different Models", color="black")
+    plt.xticks(rotation=45, color="black")
+    plt.yticks(color="black")
+    plt.tight_layout()
+    
+    plt.savefig(save_path)
