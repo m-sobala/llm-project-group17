@@ -76,8 +76,9 @@ def print_qualitative_analysis(
     decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True, max_length=MAX_LENGTH)
 
     for i in range(3):
-        print(f"{model_name} prediction {i}: {decoded_predictions[i]}")
-        print(f"{model_name} label {i}: {decoded_labels[i]}")
+        print(f"{model_name} prediction {i}: {decoded_predictions[i]}\n")
+        print(f"{model_name} label {i}: {decoded_labels[i]}\n\n")
+
 
 def bleu_score(
     model: AutoModelForSeq2SeqLM, 
