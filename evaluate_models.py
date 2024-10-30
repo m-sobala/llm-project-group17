@@ -76,7 +76,10 @@ def print_qualitative_analysis(predictions: np.ndarray, labels: np.ndarray, toke
 
     for i in range(3):
         print(f"{model_name} prediction {i}: {decoded_predictions[i]}")
+        print()
         print(f"{model_name} label {i}: {decoded_labels[i]}")
+        print()
+        print()
 
 
 def fine_tune_model(
